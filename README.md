@@ -1,115 +1,151 @@
 # OLIST Data Pipeline w Microsoft Fabric
 
-Projekt wykonany w ramach zadania z przedmiotu Przetwarzanie i Orkiestracja Danych.
+## Opis projektu
+Kompletny pipeline danych zbudowany w Microsoft Fabric z wykorzystaniem Lakehouse, Apache Spark oraz orkiestracji ETL.
 
-## Cel projektu
-
-Celem było przygotowanie kompletnego pipeline'u danych z wykorzystaniem skalowalnego silnika przetwarzania oraz orkiestracji zadań.
-
-Rozwiązanie zostało zbudowane w Microsoft Fabric z użyciem Spark oraz Lakehouse.
-
----
-
-## Zakres rozwiązania
-
-Pipeline przetwarza dane e-commerce pochodzące z publicznego zbioru OLIST.
-
-Wykorzystane pliki źródłowe:
-
-- customers
-- orders
-- order_items
-- payments
-- products
+Architektura oparta o model Medallion:
+- Bronze
+- Silver
+- Gold
 
 ---
 
-## Architektura rozwiązania
+## Technologie
+- Microsoft Fabric
+- Lakehouse
+- Apache Spark
+- Notebooks
+- Data Pipeline
+- SQL Endpoint
+- Delta Tables
 
-Zastosowano podejście Medallion Architecture:
+---
 
-### Bronze Layer
+## Architektura
 
-Warstwa surowa. Dane CSV zostały załadowane bezpośrednio do tabel Delta.
+```mermaid
+flowchart TD
 
-Tabela:
+    A[Źródła danych CSV<br/>customers / orders / items / payments / products]
 
+    A --> B[Microsoft Fabric Lakehouse<br/>Files / OneLake]
+
+    B --> C[Notebook: Bronze Ingestion<br/>PySpark Load CSV → Delta]
+
+    C --> D1[bronze_customers]
+    C --> D2[bronze_orders]
+    C --> D3[bronze_order_items]
+    C --> D4[bronze_payments]
+    C --> D5[bronze_products]
+
+    D1 --> E[Notebook: Silver Transform<br/>Join + Cleansing + Standardization]
+    D2 --> E
+    D3 --> E
+    D4 --> E
+    D5 --> E
+
+    E --> F[silver_sales]
+
+    F --> G[Notebook: Gold KPI<br/>Aggregations]
+
+    G --> H[gold_sales_kpi]
+
+    H --> I[SQL Endpoint]
+
+    I --> J[Power BI / Reporting / Analytics]
+
+    subgraph ORCHESTRATION [Fabric Pipeline]
+        P1[bronze_ingestion]
+        P2[silver_transform]
+        P3[gold_kpi]
+        P1 --> P2 --> P3
+    end
+
+    P1 -.trigger.-> C
+    P2 -.trigger.-> E
+    P3 -.trigger.-> G
+```
+
+---
+
+## Struktura projektu
+
+```text
+olist-fabric-medallion/
+├── data/
+├── notebooks/
+│   ├── nb_bronze_ingest.ipynb
+│   ├── nb_silver_transform.ipynb
+│   └── nb_gold_kpi.ipynb
+├── screenshots/
+│   ├── workspace.png
+│   ├── bronze_tables.png
+│   ├── silver_table.png
+│   ├── gold_table.png
+│   ├── pipeline.png
+│   └── diagram.png
+└── README.md
+```
+
+---
+
+## Pipeline ETL
+
+### 1. Bronze Layer
+Import danych CSV do Lakehouse.
+
+Tabele:
 - bronze_customers
 - bronze_orders
 - bronze_order_items
 - bronze_payments
 - bronze_products
 
-### Silver Layer
+![Bronze](screenshots/bronze_tables.png)
 
-Warstwa transformacji i integracji danych.
+---
 
-Utworzona tabela:
+### 2. Silver Layer
+Transformacje oraz join danych.
 
+Tabela wynikowa:
 - silver_sales
 
-Tabela zawiera połączone dane klientów, zamówień, produktów i płatności.
+![Silver](screenshots/silver_table.png)
 
-### Gold Layer
+---
 
-Warstwa raportowa / biznesowa.
+### 3. Gold Layer
+Agregacje KPI.
 
-Utworzona tabela:
-
+Tabela wynikowa:
 - gold_sales_kpi
 
-Zawiera miesięczne KPI:
-
-- revenue
-- liczba zamówień
-- średnia wartość zamówienia
+![Gold](screenshots/gold_table.png)
 
 ---
 
 ## Orkiestracja
 
-Całość została spięta w Data Pipeline w Microsoft Fabric.
+Pipeline uruchamia notebooki w kolejności:
 
-Kolejność wykonywania:
+1. bronze_ingestion
+2. silver_transform
+3. gold_kpi
 
-1. Bronze ingestion  
-2. Silver transform  
-3. Gold KPI
+![Pipeline](screenshots/pipeline.png)
 
-Pipeline stanowi pojedynczy punkt uruchomienia całego procesu.
-
----
-
-## Technologie
-
-- Microsoft Fabric
-- Apache Spark
-- Lakehouse
-- Delta Tables
-- Data Pipeline
 
 ---
 
-## Screenshots
+## Efekt końcowy
 
-Repozytorium zawiera zrzuty ekranu pokazujące:
+Projekt prezentuje kompletny proces Data Engineering:
 
-- strukturę tabel
-- pipeline
-- wyniki transformacji
-
----
-
-## Możliwe rozszerzenia
-
-- incremental refresh
-- dashboard Power BI
-- walidacja jakości danych
-- harmonogram uruchomień pipeline
-- dodatkowe KPI sprzedażowe
+- ingest danych
+- transformacje Spark
+- model Medallion
+- orkiestracja pipeline
+- dane gotowe pod BI
 
 ---
-
-## Autor
-
-Imię Nazwisko
