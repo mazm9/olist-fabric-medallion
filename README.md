@@ -30,7 +30,7 @@ flowchart TD
 
     A --> B[Microsoft Fabric Lakehouse<br/>Files / OneLake]
 
-    B --> C[Notebook: Bronze Ingestion<br/>PySpark Load CSV → Delta]
+    B --> C[Notebook: Bronze Ingestion<br/>PySpark Load CSV to Delta]
 
     C --> D1[bronze_customers]
     C --> D2[bronze_orders]
@@ -38,7 +38,7 @@ flowchart TD
     C --> D4[bronze_payments]
     C --> D5[bronze_products]
 
-    D1 --> E[Notebook: Silver Transform<br/>Join + Cleansing + Standardization]
+    D1 --> E[Notebook: Silver Transform<br/>Join, Cleansing, Standardization]
     D2 --> E
     D3 --> E
     D4 --> E
@@ -51,8 +51,6 @@ flowchart TD
     G --> H[gold_sales_kpi]
 
     H --> I[SQL Endpoint]
-
-    I --> J[Power BI / Reporting / Analytics]
 
     subgraph ORCHESTRATION [Fabric Pipeline]
         P1[bronze_ingestion]
